@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  #imagem
+  laravel:
+    build: 
+      args:
+        - "user=breno"
+        - "uid=1000"
+      context: ./
+      dockerfile: dockerfile
+    image: breno-felip3/ecommerce
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www/
+    restart: unless-stopped
+    networks:
+      - docker-ecommerce
+
+  #nginx
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/:/etc/nginx/conf.d/
+    networks:
+      - docker-ecommerce
+    
+  #mysql
+  mysql:
+    image: mysql:latest
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - docker-ecommerce
+      
+      
+
+networks:
+  docker-ecommerce:
+    driver: bridge
